@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Decryption committed | Project Aegis{% endblock %}
+{% block content %}
+<section class="page-head"><h1>Copy released after quorum commit.</h1><p>The recipient signature and four-validator certificate were verified before the fingerprinted PDF became downloadable.</p></section>
+<section class="evidence-layout">
+  <article class="verdict verified"><span class="shield">OK</span><p>CRYPTOGRAPHIC STATUS</p><h2>VERIFIED AND COMMITTED</h2><div class="verdict-grid"><div><small>RECIPIENT</small><b>{{ result.event.recipient_name }}</b></div><div><small>LEDGER BLOCK</small><b>#{{ result.block.height }}</b></div><div><small>SIGNATURE</small><b>ML-DSA-65</b></div><div><small>CERTIFICATE</small><b>{{ result.block.certificate|length }}/4 validators</b></div></div><a class="download" href="/download/{{ result.output.output_id }}">Download fingerprinted PDF</a></article>
+  <article class="panel evidence"><h2>Evidence receipt</h2><dl><dt>Event ID</dt><dd>{{ result.event.event_id }}</dd><dt>Session ID</dt><dd>{{ result.event.session_id }}</dd><dt>Watermark token</dt><dd>{{ result.event.watermark_token }}</dd><dt>Output SHA-256</dt><dd>{{ result.event.output_hash }}</dd><dt>Block hash</dt><dd>{{ result.block.block_hash }}</dd><dt>Timestamp</dt><dd>{{ result.event.decrypted_at }}</dd></dl></article>
+</section>
+<div class="actions"><a href="/workspace">Return to workspace</a></div>
+{% endblock %}

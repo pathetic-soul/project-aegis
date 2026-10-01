@@ -1,0 +1,144 @@
+# -----------------------------------------------------------------------------
+# Project Aegis runtime data
+# -----------------------------------------------------------------------------
+# Provisioned on first launch. This tree contains private keys, session secrets,
+# user records, uploaded documents, encrypted packages, ledger state, and
+# generated forensic evidence. Never commit any part of it.
+/data/
+
+# Generated reports, exports, scratch files, and smoke-test state.
+/output/
+/tmp/
+/.smoke/
+*.rekey
+*.pending
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+.venv-*/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Packaging and build output
+build/
+dist/
+downloads/
+*.egg-info/
+.eggs/
+eggs/
+parts/
+sdist/
+wheels/
+pip-wheel-metadata/
+*.egg
+MANIFEST
+
+# Test, coverage, type-checker, and linter caches
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+.cache/
+test-results/
+
+# Framework and server state
+instance/
+*.pid
+*.pid.lock
+*.log
+*.log.*
+
+# -----------------------------------------------------------------------------
+# Secrets and local configuration
+# -----------------------------------------------------------------------------
+.env
+.env.*
+# Only commit sanitized examples with placeholder values.
+!.env.example
+!.env.sample
+!.env.template
+*.local
+.envrc
+.direnv/
+session-secret
+
+# Private keys, certificates, keystores, and signing material
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p7b
+*.p7c
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.mobileprovision
+
+# Local databases and database journals
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3-journal
+*.sqlite3-shm
+*.sqlite3-wal
+
+# -----------------------------------------------------------------------------
+# Editors, operating systems, and temporary files
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.code-workspace
+*.swp
+*.swo
+*~
+
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+*.bak
+*.orig
+*.rej
+*.tmp
+*.temp
+
+# Local assistant state; shared instructions and rules remain versionable.
+.codex/*.local.*
+.claude/settings.local.json
+
+# Keep source, documentation, static assets, dependency manifests, and lockfiles.
+# Ignore rules do not remove files from an existing Git index or history.

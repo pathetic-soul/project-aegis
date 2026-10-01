@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Audit ledger | Project Aegis{% endblock %}
+{% block content %}
+<section class="page-head ledger-head"><div><h1>Quorum-certified ledger.</h1><p>Four independent local validator identities maintain identical signed replicas.</p></div><div class="integrity {{ 'ok' if ledger_status.valid else 'bad' }}"><span>CHAIN INTEGRITY</span><b>{{ "VERIFIED" if ledger_status.valid else "FAILED" }}</b><small>Height {{ ledger_status.height }} | quorum {{ ledger_status.quorum }}</small></div></section>
+<section class="validator-grid">{% for id, head in ledger_status.node_heads.items() %}<div><span>{{ id|upper }}</span><b>ONLINE</b><code>{{ head[:16] }}…</code></div>{% endfor %}</section>
+<section class="ledger-tools" aria-labelledby="ledger-filter-title">
+  <div class="ledger-tools-heading"><div><h2 id="ledger-filter-title">Search audit evidence</h2><p>Filter the verified local chain without altering its records.</p></div><strong>{{ chain|length }} of {{ total_blocks }} blocks</strong></div>
+  <form class="ledger-filter" method="get" action="/ledger">
+    <label>Identity<input name="identity" value="{{ filters.identity }}" placeholder="Name or username"></label>
+    <label>Event type<select name="event_type"><option value="">All events</option><option value="aegis.decryption.v1" {% if filters.event_type == 'aegis.decryption.v1' %}selected{% endif %}>Decryption</option><option value="aegis.identity.v1" {% if filters.event_type == 'aegis.identity.v1' %}selected{% endif %}>Enrollment</option><option value="aegis.identity.key-binding.v1" {% if filters.event_type == 'aegis.identity.key-binding.v1' %}selected{% endif %}>Key binding</option><option value="aegis.identity.status.v1" {% if filters.event_type == 'aegis.identity.status.v1' %}selected{% endif %}>Status change</option></select></label>
+    <label>Document ID<input name="document_id" value="{{ filters.document_id }}" placeholder="doc_..."></label>
+    <label>Date<input type="date" name="date" value="{{ filters.date }}"></label>
+    <label>Block<input name="block" value="{{ filters.block }}" placeholder="# or hash prefix"></label>
+    <button class="button primary-button" type="submit">Apply filters</button>
+    {% if filters.identity or filters.event_type or filters.document_id or filters.date or filters.block %}<a class="clear-filter" href="/ledger">Clear all</a>{% endif %}
+  </form>
+</section>
+<section class="chain">
+{% if chain %}{% for block in chain %}
+<article class="block">
+  <div class="block-index">#{{ block.height }}</div>
+  <div class="block-main">
+    <div><span>{% if block.event.schema == 'aegis.decryption.v1' %}DECRYPTION EVENT{% elif block.event.schema == 'aegis.identity.v1' %}IDENTITY ENROLLMENT{% elif block.event.schema == 'aegis.identity.key-binding.v1' %}IDENTITY KEY BINDING{% else %}IDENTITY STATUS{% endif %}</span><time>{{ block.timestamp }}</time></div>
+    {% if block.event.schema == 'aegis.decryption.v1' %}
+      <h2>{{ block.event.recipient_name }} <small>decrypted {{ block.event.document_id }}</small></h2>
+      <dl><dt>Event</dt><dd>{{ block.event.event_id }}</dd><dt>Session</dt><dd>{{ block.event.session_id }}</dd><dt>Block hash</dt><dd>{{ block.block_hash }}</dd><dt>Previous</dt><dd>{{ block.previous_hash }}</dd></dl>
+    {% elif block.event.schema == 'aegis.identity.v1' %}
+      <h2>{{ block.event.identity_name }} <small>joined as {{ block.event.role }}</small></h2>
+      <dl><dt>Identity</dt><dd>{{ block.event.identity_id }}</dd><dt>Authorized by</dt><dd>{{ block.event.created_by }}</dd><dt>Signing key</dt><dd>{{ block.event.signing_key_id or 'Not applicable' }}</dd><dt>Block hash</dt><dd>{{ block.block_hash }}</dd><dt>Previous</dt><dd>{{ block.previous_hash }}</dd></dl>
+    {% elif block.event.schema == 'aegis.identity.key-binding.v1' %}
+      <h2>{{ block.event.identity_name }} <small>anchored a recipient signing key</small></h2>
+      <dl><dt>Identity</dt><dd>{{ block.event.identity_id }}</dd><dt>Signing key</dt><dd>{{ block.event.signing_key_id }}</dd><dt>Reason</dt><dd>{{ block.event.binding_reason }}</dd><dt>Block hash</dt><dd>{{ block.block_hash }}</dd><dt>Previous</dt><dd>{{ block.previous_hash }}</dd></dl>
+    {% else %}
+      <h2>{{ block.event.identity_name }} <small>is {{ block.event.status }}</small></h2>
+      <dl><dt>Identity</dt><dd>{{ block.event.identity_id }}</dd><dt>Changed by</dt><dd>{{ block.event.changed_by }}</dd><dt>Block hash</dt><dd>{{ block.block_hash }}</dd><dt>Previous</dt><dd>{{ block.previous_hash }}</dd></dl>
+    {% endif %}
+  </div>
+  <div class="certificate"><span>QUORUM CERTIFICATE</span><b>{{ block.certificate|length }}/4</b><small>ML-DSA-65 signatures</small>{% if block.event.schema == 'aegis.decryption.v1' %}<a href="/evidence/report/{{ block.event.event_id }}">Evidence PDF</a>{% endif %}</div>
+</article>
+{% endfor %}{% else %}<div class="empty ledger-empty"><b>No matching blocks</b><p>Adjust the filters to search the complete local ledger.</p></div>{% endif %}
+</section>
+<div class="actions"><a href="/workspace">Return to workspace</a></div>
+{% endblock %}

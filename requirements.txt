@@ -1,0 +1,7 @@
+fastapi>=0.116,<1
+uvicorn[standard]>=0.35,<1
+python-multipart>=0.0.20,<1
+PyMuPDF>=1.26,<2
+Jinja2>=3.1,<4
+cryptography>=46,<47
+itsdangerous>=2.2,<3

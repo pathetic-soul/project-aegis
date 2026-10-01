@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Secure login | Project Aegis{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-context"><a class="back-link" href="/">Return to overview</a><h1>Enter the secure workspace.</h1><p>Role permissions determine which cryptographic operations are available after sign-in.</p><div class="auth-photo"><img src="/static/assets/aegis-forensic-document.png" alt="Forensic document analysis on a secure evidence table" width="1536" height="1024"></div></div>
+  <div class="auth-form-wrap"><div class="auth-form-head"><h2>Sign in</h2><p>Credentials are verified locally. No external identity provider is contacted.</p></div>{% if error %}<div class="alert error-alert" role="alert">{{ error }} Try one of the demonstration accounts below.</div>{% endif %}<form class="auth-form" method="post" action="/login"><label>Username<input name="username" autocomplete="username" required placeholder="Enter username"></label><label>Passphrase<input type="password" name="password" autocomplete="current-password" required placeholder="Enter passphrase"></label><button class="button primary-button full-button" type="submit">Authenticate</button></form><div class="demo-accounts"><h3>Demonstration accounts</h3><div><button type="button" data-user="admin" data-password="aegis-admin"><span>Administrator</span><code>admin / aegis-admin</code></button><button type="button" data-user="alice" data-password="alice123"><span>Recipient</span><code>alice / alice123</code></button><button type="button" data-user="investigator" data-password="audit123"><span>Investigator</span><code>investigator / audit123</code></button></div><p>Select an account to fill the form.</p></div></div>
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Forensic result | Project Aegis{% endblock %}
+{% block content %}
+<section class="page-head"><h1>Investigation result.</h1><p>Forensic analysis of {{ filename }}</p></section>
+{% if result.status == "verified" %}
+<article class="verdict verified wide"><span class="shield">OK</span><p>ATTRIBUTION STATUS</p><h2>CRYPTOGRAPHICALLY VERIFIED</h2><p class="verdict-copy">This exact document copy resolves to <strong>{{ result.block.event.recipient_name }}</strong> and the complete evidence chain is valid.</p><div class="verdict-grid"><div><small>RECIPIENT</small><b>{{ result.block.event.recipient_name }}</b></div><div><small>SESSION</small><b>{{ result.block.event.session_id }}</b></div><div><small>RECIPIENT SIGNATURE</small><b>VALID</b></div><div><small>LEDGER QUORUM</small><b>VALID</b></div></div></article>
+{% elif result.status == "legacy_binding" %}
+<article class="verdict warning wide"><span class="shield">!</span><p>ATTRIBUTION STATUS</p><h2>EXACT COPY. LEGACY IDENTITY BINDING.</h2><p class="verdict-copy">The file hash, recipient signature, and quorum certificate are valid for <strong>{{ result.block.event.recipient_name }}</strong>, but that recipient key was anchored after this historical decryption. Treat the result as legacy evidence rather than a fully portable proof.</p></article>
+{% elif result.status == "marker_only" %}
+<article class="verdict warning wide"><span class="shield">!</span><p>ATTRIBUTION STATUS</p><h2>MARKER FOUND. FILE BINDING FAILED.</h2><p class="verdict-copy">The marker resolves to {{ result.block.event.recipient_name }}, but the uploaded file hash differs from the signed output. Treat this as an investigative lead, not conclusive attribution.</p></article>
+{% elif result.status == "unknown_marker" %}
+<article class="verdict warning wide"><span class="shield">?</span><p>ATTRIBUTION STATUS</p><h2>UNREGISTERED MARKER</h2><p class="verdict-copy">A syntactically valid Aegis marker was found, but no matching ledger event exists.</p></article>
+{% else %}
+<article class="verdict failed wide"><span class="shield">×</span><p>ATTRIBUTION STATUS</p><h2>NO FORENSIC MARKER FOUND</h2><p class="verdict-copy">This file cannot be attributed by the current ledger.</p></article>
+{% endif %}
+{% if result.block %}<article class="panel evidence wide-panel"><div class="panel-heading"><h2>Verification evidence</h2>{% if result.status == 'verified' %}<div class="evidence-downloads"><a class="button secondary-button report-button" href="/evidence/report/{{ result.block.event.event_id }}">Human-readable PDF</a>{% if result.bundle_id %}<a class="button primary-button report-button" href="/evidence/bundle/{{ result.bundle_id }}">Portable proof bundle</a>{% endif %}</div>{% endif %}</div><dl><dt>Watermark token</dt><dd>{{ result.token }}</dd><dt>Uploaded SHA-256</dt><dd>{{ result.uploaded_hash }}</dd><dt>Signed output SHA-256</dt><dd>{{ result.block.event.output_hash }}</dd><dt>Event ID</dt><dd>{{ result.block.event.event_id }}</dd><dt>Block hash</dt><dd>{{ result.block.block_hash }}</dd>{% if result.evidence %}<dt>Recipient key binding</dt><dd>{{ 'ANCHORED BEFORE DECRYPTION' if result.evidence.identity_binding_temporal_valid else ('ANCHORED (LEGACY TIMING)' if result.evidence.identity_key_anchored else 'UNANCHORED LEGACY RECORD') }}</dd>{% endif %}</dl>{% if result.bundle_id %}<p class="proof-note">Verify this JSON bundle on a clean offline machine with <code>tools/verify_evidence.py</code> and the separately retained <a href="/evidence/trust-anchor">validator trust anchor</a>.</p>{% endif %}</article>{% endif %}
+<div class="actions"><a href="/workspace">Investigate another file</a><a href="/ledger">Inspect audit ledger</a></div>
+{% endblock %}

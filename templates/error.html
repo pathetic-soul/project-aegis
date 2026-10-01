@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Access restricted | Project Aegis{% endblock %}
+{% block content %}<section class="error-page"><span>{{ status_code }}</span><h1>Access restricted.</h1><p>{{ error }}</p><a class="button primary-button" href="{{ '/workspace' if user else '/login' }}">{{ 'Return to workspace' if user else 'Sign in' }}</a></section>{% endblock %}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050d16">
+  <meta name="description" content="Offline quantum-safe document attribution with recipient-signed evidence.">
+  <title>{% block title %}Project Aegis{% endblock %}</title>
+  <script>
+    document.documentElement.classList.add('js');
+    try {
+      if (location.pathname === '/' && !matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('aegis-intro-seen')) {
+        document.documentElement.classList.add('first-visit-motion');
+        sessionStorage.setItem('aegis-intro-seen', 'true');
+      }
+    } catch (error) {}
+  </script>
+  <link rel="stylesheet" href="/static/app.css?v=5">
+  <script src="/static/app.js?v=5" defer></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">A</span><span>Project Aegis<small>Quantum-safe document attribution</small></span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">Menu</button>
+    <nav id="primary-navigation" aria-label="Primary navigation">
+      {% if user %}
+        <a href="/workspace" {% if request.url.path == '/workspace' %}aria-current="page"{% endif %}>Workspace</a>
+        {% if user.role == 'administrator' %}<a href="/workspace#readiness">Readiness</a><a href="/workspace#trust">Trusted people</a>{% endif %}
+        <a href="/account/password" {% if request.url.path == '/account/password' %}aria-current="page"{% endif %}>Credentials</a>
+        {% if user.role in ['administrator', 'investigator'] %}<a href="/ledger" {% if request.url.path == '/ledger' %}aria-current="page"{% endif %}>Audit ledger</a>{% endif %}
+        <span class="role-chip">{{ role_labels[user.role] }}</span>
+        <form action="/logout" method="post"><button class="nav-action" type="submit">Sign out</button></form>
+      {% elif request.url.path != '/login' %}
+        <a href="/#mechanism">How it works</a>
+        <a href="/#proof">Verification</a>
+        <a class="nav-action" href="/login">Secure login</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main id="main-content">{% block content %}{% endblock %}</main>
+  <footer class="site-footer"><div><a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">A</span><span>Project Aegis</span></a><p>Cryptographically verifiable document attribution for offline environments.</p></div><div><span>FIPS 203</span><span>FIPS 204</span><span>Air-gap ready</span></div></footer>
+</body>
+</html>

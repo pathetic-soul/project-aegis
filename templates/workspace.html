@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ role_labels[user.role] }} workspace | Project Aegis{% endblock %}
+{% block body_class %}workspace-page{% endblock %}
+{% block content %}
+<section class="workspace-head"><div><h1>Welcome, {{ user.name }}.</h1><p>{% if user.role == 'administrator' %}Create encrypted distributions and govern the local trust chain.{% elif user.role == 'recipient' %}Decrypt authorized packages with your protected private key.{% else %}Examine suspect documents and verify their evidence chains.{% endif %}</p></div><div class="workspace-status"><span>Ledger status</span><strong class="positive">{{ "Verified" if ledger_status.valid else "Attention required" }}</strong><small>{{ ledger_status.height }} committed blocks, {{ ledger_status.quorum }} quorum</small></div></section>
+{% if error %}<div class="alert error-alert" role="alert">{{ error }}</div>{% endif %}
+{% if success %}<div class="alert success-alert" role="status">{{ success }}</div>{% endif %}
+
+{% if user.role == 'administrator' %}
+<section class="readiness" id="readiness" aria-labelledby="readiness-title">
+  <div class="readiness-heading"><div><h2 id="readiness-title">System readiness</h2><p>Live status from this air-gapped deployment.</p></div><span class="readiness-state {{ 'ready' if ledger_status.valid else 'attention' }}">{{ 'Ready for demonstration' if ledger_status.valid else 'Attention required' }}</span></div>
+  <div class="readiness-metrics">
+    <div><span>Trusted recipients</span><strong>{{ readiness.active_recipients }}</strong><small>active identities</small></div>
+    <div><span>Encrypted packages</span><strong>{{ readiness.encrypted_packages }}</strong><small>stored locally</small></div>
+    <div><span>Decryptions</span><strong>{{ readiness.decryption_events }}</strong><small>signed events</small></div>
+    <div><span>Ledger height</span><strong>#{{ readiness.ledger_height }}</strong><small>{{ ledger_status.quorum }} quorum</small></div>
+  </div>
+  <div class="readiness-checks" role="list" aria-label="Security readiness checks">
+    <div role="listitem"><i></i><span>Validators</span><b>{{ '4 online' if readiness.validators_ready else 'Check required' }}</b></div>
+    <div role="listitem"><i></i><span>Operating mode</span><b>Offline</b></div>
+    <div role="listitem"><i></i><span>Key exchange</span><b>ML-KEM-768 ready</b></div>
+    <div role="listitem"><i></i><span>Signatures</span><b>ML-DSA-65 ready</b></div>
+  </div>
+</section>
+<section class="demo-guide" id="demo" aria-labelledby="demo-title">
+  <div class="demo-guide-copy"><h2 id="demo-title">Demo workflow</h2><p>A four-step path from protected source document to judge-ready attribution evidence.</p><div class="demo-progress"><span style="--progress: {{ 100 if readiness.latest_event_id else (50 if readiness.encrypted_packages else 25) }}%"></span></div></div>
+  <ol class="demo-steps">
+    <li class="complete"><span>1</span><div><strong>Confirm trusted recipients</strong><small>{{ readiness.active_recipients }} active identities are ready.</small></div><a href="#trust">Review</a></li>
+    <li class="{{ 'complete' if readiness.encrypted_packages else 'current' }}"><span>2</span><div><strong>Create encrypted package</strong><small>{{ readiness.encrypted_packages }} package{{ '' if readiness.encrypted_packages == 1 else 's' }} available.</small></div><a href="#distribution">{{ 'Review' if readiness.encrypted_packages else 'Start' }}</a></li>
+    <li class="{{ 'complete' if readiness.decryption_events else 'pending' }}"><span>3</span><div><strong>Release a fingerprinted copy</strong><small>{{ readiness.decryption_events }} signed decryption event{{ '' if readiness.decryption_events == 1 else 's' }}.</small></div><span class="step-note">Recipient workspace</span></li>
+    <li class="{{ 'complete' if request.session.get('last_verified_event') else ('current' if readiness.latest_event_id else 'pending') }}"><span>4</span><div><strong>Verify and export evidence</strong><small>{% if request.session.get('last_verified_event') %}Investigation verified in this session.{% else %}Upload the released copy to generate the report.{% endif %}</small></div>{% if request.session.get('last_verified_event') %}<a href="/evidence/report/{{ request.session.get('last_verified_event') }}">Report</a>{% else %}<span class="step-note">Investigator workflow</span>{% endif %}</li>
+  </ol>
+</section>
+<section class="task-grid admin-grid">
+  <article class="task-surface primary-task" id="distribution">
+    <div class="task-title"><h2>Encrypt a PDF for authorized recipients.</h2><p>The document ciphertext is created once. Each selected identity receives an ML-KEM key envelope.</p></div>
+    <form method="post" action="/distribute" enctype="multipart/form-data">
+      <label class="file-control" data-file-control><input type="file" name="document" accept="application/pdf" required><span class="file-label">Select confidential PDF</span><small data-file-hint>PDF only, maximum 25 MB</small></label>
+      <fieldset><legend>Authorized recipients</legend><div class="recipient-list">{% for id, person in recipients.items() %}<label><input type="checkbox" name="recipients" value="{{ id }}" checked><span class="avatar">{{ person.name[0] }}</span><span><strong>{{ person.name }}</strong><small>{{ person.department }}</small></span></label>{% else %}<div class="empty-inline">Enroll an active recipient before creating a distribution.</div>{% endfor %}</div></fieldset>
+      <button class="button primary-button full-button" type="submit" {% if not recipients %}disabled{% endif %}>Encrypt and distribute</button>
+    </form>
+  </article>
+  <aside class="workspace-aside"><div class="aside-section"><span>Demonstration asset</span><h3>Start with a known document.</h3><p>Use the prepared PDF to demonstrate identical visible output across recipient sessions.</p><a class="button secondary-button full-button" href="/sample">Download sample PDF</a></div><div class="aside-section"><span>Current packages</span><strong class="large-value">{{ packages|length }}</strong><small>Encrypted distributions available locally</small></div></aside>
+</section>
+<section class="trust-section" id="trust">
+  <div class="trust-intro"><h2>Manage trusted people.</h2><p>Enrollment generates local credentials and commits the identity to the validator ledger. New users must replace their temporary passphrase on first sign in.</p></div>
+  <div class="trust-layout">
+    <form class="enrollment-form" method="post" action="/admin/trusted-people">
+      <div class="form-heading"><strong>Add a trusted identity</strong></div>
+      <div class="field-pair"><label class="field">Full name<input name="full_name" minlength="2" maxlength="80" autocomplete="off" required></label><label class="field">Username<input name="username" minlength="3" maxlength="32" pattern="[a-z][a-z0-9._-]{2,31}" placeholder="maya.rao" autocomplete="off" required></label></div>
+      <div class="field-pair"><label class="field">Department<input name="department" minlength="2" maxlength="60" autocomplete="organization-title" required></label><label class="field">Access role<select name="role" required><option value="recipient">Recipient</option><option value="investigator">Investigator</option></select></label></div>
+      <label class="field">Temporary passphrase<input type="password" name="temporary_password" minlength="10" autocomplete="new-password" required><small>At least 10 characters with uppercase, lowercase, and a number.</small></label>
+      <button class="button primary-button full-button" type="submit">Generate identity and commit</button>
+    </form>
+    <div class="directory"><div class="directory-head"><div><span>Trust directory</span><strong>{{ people|length }} local identities</strong></div><small>No cloud directory</small></div>
+      <div class="people-list">{% for id, person in people.items() %}<article class="person-row"><span class="avatar">{{ person.name[0] }}</span><div><strong>{{ person.name }}</strong><small>@{{ id }} | {{ role_labels[person.role] }} | {{ person.department }}</small></div><span class="status-pill {{ 'active' if person.active else 'suspended' }}">{{ 'Active' if person.active else 'Suspended' }}</span>{% if person.role != 'administrator' %}<form method="post" action="/admin/trusted-people/{{ id }}/status"><input type="hidden" name="active" value="{{ 'false' if person.active else 'true' }}"><button class="quiet-button" type="submit">{{ 'Suspend' if person.active else 'Restore' }}</button></form>{% else %}<span class="root-label">Root authority</span>{% endif %}</article>{% endfor %}</div>
+    </div>
+  </div>
+</section>
+{% elif user.role == 'recipient' %}
+<section class="task-grid recipient-grid">
+  <article class="task-surface primary-task"><div class="task-title"><h2>Release your uniquely fingerprinted copy.</h2><p>Your private key signs the decryption event. The PDF becomes available only after ledger quorum.</p></div><form method="post" action="/decrypt"><label class="field">Authorized package<select name="package_id" required>{% for package in packages %}{% if user.username in package.recipients %}<option value="{{ package.package_id }}">{{ package.filename }} | {{ package.package_id[-8:] }}</option>{% endif %}{% endfor %}</select></label><label class="field">Private-key passphrase<input type="password" name="password" autocomplete="current-password" placeholder="Enter your key passphrase" required><small>Use the same local passphrase you use to sign in.</small></label><div class="identity-binding"><span>Signing identity</span><strong>{{ user.name }}</strong><code>{{ user.username }}</code></div><button class="button primary-button full-button" type="submit">Decrypt, fingerprint, and sign</button></form></article>
+  <aside class="workspace-aside"><div class="aside-section"><span>Release policy</span><ol class="policy-list"><li>Decrypt locally</li><li>Embed session marker</li><li>Sign event with ML-DSA-65</li><li>Commit with validator quorum</li></ol></div><div class="aside-section"><span>Your previous copies</span><strong class="large-value">{% set count = namespace(value=0) %}{% for item in outputs %}{% if item.recipient_id == user.username %}{% set count.value = count.value + 1 %}{% endif %}{% endfor %}{{ count.value }}</strong><small>Signed sessions recorded for this identity</small></div></aside>
+</section>
+{% else %}
+<section class="task-grid investigator-grid">
+  <article class="task-surface primary-task"><div class="task-title"><h2>Examine a suspected leaked copy.</h2><p>Aegis extracts the marker, resolves its event, and verifies the exact file binding and complete ledger evidence.</p></div><form method="post" action="/investigate" enctype="multipart/form-data"><label class="file-control forensic-file" data-file-control><input type="file" name="leaked_document" accept="application/pdf" required><span class="file-label">Select suspect PDF</span><small data-file-hint>The document never leaves this machine</small></label><button class="button primary-button full-button" type="submit">Run forensic verification</button></form></article>
+  <aside class="workspace-aside"><div class="aside-section"><span>Verification policy</span><div class="check-list"><div><strong>Marker</strong><small>Valid token and checksum</small></div><div><strong>Identity</strong><small>Recipient ML-DSA signature</small></div><div><strong>Ledger</strong><small>Block chain and quorum certificate</small></div><div><strong>File</strong><small>Exact signed output hash</small></div></div></div><a class="button secondary-button full-button" href="/ledger">Inspect full audit ledger</a></aside>
+</section>
+{% endif %}
+
+{% if outputs %}<section class="activity"><div class="activity-head"><h2>Recent signed events</h2>{% if user.role in ['administrator','investigator'] %}<a class="text-link" href="/ledger">View complete ledger</a>{% endif %}</div><div class="activity-table" role="table" aria-label="Recent decryption events">{% for item in outputs[:6] %}{% if user.role != 'recipient' or item.recipient_id == user.username %}<div class="activity-row" role="row"><div><strong>{{ item.filename }}</strong><small>{{ item.created_at }}</small></div><code>{{ item.event_id }}</code><span>{{ people[item.recipient_id].name }}</span>{% if user.role != 'investigator' %}<a href="/download/{{ item.output_id }}">Download</a>{% else %}<span>Evidence retained</span>{% endif %}</div>{% endif %}{% endfor %}</div></section>{% endif %}
+{% endblock %}

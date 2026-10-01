@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block body_class %}landing{% endblock %}
+{% block content %}
+<section class="landing-hero">
+  <div class="hero-copy">
+    <h1>Every copy carries proof.</h1>
+    <p class="hero-summary">Trace leaked documents to a recipient-signed session, fully offline.</p>
+    <div class="hero-actions"><a class="button primary-button" href="/login">Enter secure workspace</a><a class="text-link" href="#mechanism">See the verification flow</a></div>
+  </div>
+  <figure class="hero-visual"><img src="/static/assets/aegis-forensic-document.png" alt="A sensitive paper document carrying a field of cobalt forensic markers on an evidence table" width="1536" height="1024"><div class="scan-status" aria-hidden="true"><i></i>Controlled release path</div><figcaption><span>Decryption event</span><strong>Fingerprint embedded before release</strong></figcaption></figure>
+</section>
+<section class="proof-bar" aria-label="System status"><div data-reveal><span>Key exchange</span><strong>ML-KEM-768</strong></div><div data-reveal><span>Signatures</span><strong>ML-DSA-65</strong></div><div data-reveal><span>Ledger integrity</span><strong class="positive">{{ "Verified" if ledger_status.valid else "Attention required" }} | {{ ledger_status.quorum }}</strong></div><div data-reveal><span>Operation</span><strong>Local and offline</strong></div></section>
+<section class="mechanism" id="mechanism">
+  <div class="section-heading" data-reveal><h2>One encrypted file. A distinct evidence trail for every recipient.</h2><p>The document becomes attributable inside the controlled decryption path, before plaintext is released.</p></div>
+  <ol class="mechanism-flow"><li data-reveal><span>Encrypt</span><h3>Distribute once</h3><p>AES-256-GCM protects one ciphertext. ML-KEM envelopes authorize each recipient.</p></li><li data-reveal><span>Fingerprint</span><h3>Mark each session</h3><p>A unique invisible token is embedded during decryption without changing visible output.</p></li><li data-reveal><span>Commit</span><h3>Sign before release</h3><p>The recipient signs the event. Validator quorum commits it before download.</p></li><li data-reveal><span>Verify</span><h3>Resolve a leaked copy</h3><p>The marker, output hash, signature, and ledger certificate are checked together.</p></li></ol>
+</section>
+<section class="evidence-story" id="proof"><div class="evidence-copy" data-reveal><h2>Attribution that can be independently checked.</h2><p>Aegis returns the signed record, exact output hash, validator certificate, and complete chain status. If file binding fails, the interface reports an investigative lead instead of a verified accusation.</p><a class="button secondary-button" href="/login">Enter secure workspace</a></div><div class="evidence-stack" aria-label="Evidence chain"><div data-reveal><span>Recipient proof</span><strong>ML-DSA-65 signature</strong><small>Binds identity, document, session, token, and output hash</small></div><div data-reveal><span>Ledger proof</span><strong>3-of-4 quorum certificate</strong><small>Detects changes to committed events and block history</small></div><div data-reveal><span>File proof</span><strong>Exact SHA-256 binding</strong><small>Separates verified copies from transplanted markers</small></div></div></section>
+<section class="roles-section"><h2 data-reveal>Clear authority at every stage.</h2><div class="role-lines"><article data-reveal><span>Administrator</span><h3>Controls distribution</h3><p>Creates encrypted packages and selects authorized recipients.</p></article><article data-reveal><span>Recipient</span><h3>Controls private-key use</h3><p>Decrypts authorized documents and signs the resulting evidence.</p></article><article data-reveal><span>Investigator</span><h3>Controls verification</h3><p>Examines suspect files and validates the immutable audit trail.</p></article></div></section>
+<section class="final-cta" data-reveal><h2>Run the complete workflow without leaving the machine.</h2><a class="button light-button" href="/login">Enter secure workspace</a></section>
+{% endblock %}
